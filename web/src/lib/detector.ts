@@ -11,9 +11,38 @@ export interface Detection {
   genderProbability: number;
 }
 
+// Wait for window.faceapi to exist (the global is populated by /vendor/face-api.min.js).
+// In production the <script> tag is sync and runs before the React bundle, but defensively
+// poll for it AND inject the script if it never appears (handles extensions blocking
+// the vendor path, service-worker stale state, slow networks, etc.).
+async function ensureFaceApi(timeoutMs = 6000): Promise<any> {
+  if (window.faceapi) return window.faceapi;
+
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (window.faceapi) return window.faceapi;
+    await new Promise((r) => setTimeout(r, 50));
+  }
+
+  // Fallback: inject the script ourselves.
+  await new Promise<void>((resolve, reject) => {
+    const existing = document.querySelector('script[data-faceapi-fallback]');
+    if (existing) { existing.addEventListener('load', () => resolve()); existing.addEventListener('error', () => reject(new Error('vendor script failed to load'))); return; }
+    const s = document.createElement('script');
+    s.src = '/vendor/face-api.min.js';
+    s.async = false;
+    s.dataset.faceapiFallback = 'true';
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error('Failed to fetch /vendor/face-api.min.js — check that the file is reachable (an ad-blocker or extension may be blocking /vendor/ paths).'));
+    document.head.appendChild(s);
+  });
+
+  if (!window.faceapi) throw new Error('face-api.js loaded but did not expose window.faceapi');
+  return window.faceapi;
+}
+
 export async function loadModels(baseUri = '/models'): Promise<void> {
-  const f = window.faceapi;
-  if (!f) throw new Error('face-api.js global not loaded');
+  const f = await ensureFaceApi();
   await f.nets.tinyFaceDetector.loadFromUri(baseUri);
   await f.nets.ageGenderNet.loadFromUri(baseUri);
 }
@@ -22,7 +51,7 @@ export async function detect(
   source: HTMLImageElement | HTMLVideoElement | HTMLCanvasElement,
   { inputSize = 416, scoreThreshold = 0.5 }: { inputSize?: number; scoreThreshold?: number } = {},
 ): Promise<Detection[]> {
-  const f = window.faceapi;
+  const f = await ensureFaceApi();
   const opts = new f.TinyFaceDetectorOptions({ inputSize, scoreThreshold });
   return f.detectAllFaces(source, opts).withAgeAndGender();
 }
