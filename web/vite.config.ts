@@ -9,8 +9,12 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
+      // Manifest is sourced from web/public/manifest.json (FAS screencheck reads it from there).
+      manifestFilename: 'manifest.json',
+      strategies: 'generateSW',
       workbox: {
-        globPatterns: ['**/*.{js,css,html,png,svg,ico,woff2,wasm,json}'],
+        // Model shards have no extension — add 'models/*' so they're precached for offline use.
+        globPatterns: ['**/*.{js,css,html,png,svg,ico,woff2,wasm,json}', 'models/*'],
         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
         runtimeCaching: [
           {
@@ -33,20 +37,7 @@ export default defineConfig({
           },
         ],
       },
-      manifest: {
-        name: 'facer',
-        short_name: 'facer',
-        description: 'Free facer app — part of FreeAppStore',
-        start_url: '/',
-        display: 'standalone',
-        background_color: '#ffffff',
-        theme_color: '#111111',
-        orientation: 'any',
-        icons: [
-          { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
-          { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
-        ],
-      },
+      // No inline `manifest:` — the source of truth is web/public/manifest.json.
     }),
   ],
   server: { host: true },

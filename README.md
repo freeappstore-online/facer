@@ -1,40 +1,36 @@
-# template-standalone
+# facer
 
-The standalone-app template used by [`fas init`](https://github.com/freeappstore-online/platform/tree/main/packages/cli) to scaffold new free apps for [FreeAppStore](https://freeappstore.online).
+Offline face & gender recognition that runs entirely in your browser. Drop a photo (or start your webcam), faces get boxed, gender + approximate age are estimated locally via [face-api.js](https://github.com/justadudewhohacks/face-api.js). No upload, no tracking, no backend.
 
-You almost certainly want to use the CLI, not clone this directly:
+- Subdomain: `facer.freeappstore.online`
+- Dev: `pnpm install && pnpm dev`
+- Build: `pnpm build`
 
-```bash
-npm i -g @freeappstore/cli
-fas init my-app
+## How it works
+
+- TinyFaceDetector + age/gender net from face-api.js, loaded from `/models/` at startup (~625 KB).
+- Inference runs via TensorFlow.js in the browser. Images and webcam frames never leave the device.
+- PWA: model shard files are precached by the service worker so the app works fully offline after first load.
+
+## Layout
+
 ```
-
-The CLI clones this template, replaces every `freeappstore` placeholder with your app id, runs `git init`, and makes the first commit — the result is a runnable app you can `pnpm dev` immediately.
-
-## What's in here
-
-- `web/` — Vite + React + TypeScript app, ESM-only, no Tailwind config needed (utility classes via inline styles + the `Shell` component).
-- `web/src/components/Shell.tsx` — sidebar layout with brand fonts (Manrope + Fraunces), CSS variables (`--paper`, `--ink`, `--accent`), and dark-mode support out of the box.
-- `web/src/main.tsx` — React entry point.
-- `web/index.html` — links Manrope + Fraunces, sets PWA meta tags, references the manifest.
-- `web/public/manifest.json` — PWA manifest with `name`, `display`, `start_url`.
-- `package.json` — pnpm workspace, `dev` / `build` / `typecheck` / `test` scripts.
-- `.github/workflows/compliance.yml` — runs the same checks as `fas check` on every PR. Source of truth lives in the [`@freeappstore/compliance`](https://www.npmjs.com/package/@freeappstore/compliance) package.
-
-## Cloning manually (not recommended)
-
-If you really want to scaffold by hand:
-
-```bash
-git clone https://github.com/freeappstore-online/template-standalone my-app
-cd my-app
-# Replace freeappstore → my-app in package.json, web/index.html, web/src/main.tsx, README, etc.
-rm -rf .git && git init
-pnpm install && pnpm dev
+web/
+├── index.html                 — loads face-api.js (global), Manrope/Fraunces, manifest
+├── public/
+│   ├── models/                — TinyFaceDetector + age/gender weights
+│   └── vendor/face-api.min.js — MIT-licensed lib
+├── src/
+│   ├── App.tsx                — UI: upload / drop / paste / webcam, live status, results
+│   ├── components/Shell.tsx   — FAS sidebar + mobile dock layout
+│   ├── lib/
+│   │   ├── dragdrop.ts        — window-level drop handling (counter-based, items API fallback)
+│   │   ├── loader.ts          — File → <img> promise
+│   │   └── detector.ts        — face-api wrapper + canvas drawing
+│   └── index.css              — brand tokens (--paper, --ink, --accent, …)
+└── vite.config.ts             — PWA with model shards included in precache
 ```
-
-Then run `fas publish` to provision repo + hosting + DNS, or open the [submission form](https://github.com/freeappstore-online/submissions/issues/new) for maintainer review.
 
 ## License
 
-MIT.
+MIT — see [LICENSE](./LICENSE). face-api.js weights are MIT-licensed; see upstream.

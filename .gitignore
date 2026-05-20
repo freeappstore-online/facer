@@ -6,3 +6,6 @@ dist
 
 # TypeScript incremental build cache
 *.tsbuildinfo
+
+# Local FAS screencheck artifacts
+screencheck-out

@@ -1,0 +1,15 @@
+{
+  "name": "Facer — offline face & gender recognition",
+  "short_name": "Facer",
+  "description": "Detect faces and recognize gender entirely in your browser. No upload, no tracking.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#d86f4d",
+  "orientation": "any",
+  "min_viewport_width": 320,
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
