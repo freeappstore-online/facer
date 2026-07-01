@@ -9,3 +9,8 @@ dist
 
 # Local FAS screencheck artifacts
 screencheck-out
+.vibe-check/
+playwright-report/
+screencheck-out/
+test-results/
+.playwright-mcp/

@@ -16,6 +16,10 @@ export default defineConfig({
         // Model shards have no extension — add 'models/*' so they're precached for offline use.
         globPatterns: ['**/*.{js,css,html,png,svg,ico,woff2,wasm,json}', 'models/*'],
         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
+        skipWaiting: true,
+        clientsClaim: true,
+        navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/api/, /^\/v1/],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
